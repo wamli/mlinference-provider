@@ -29,7 +29,7 @@ _SHOW_HELP
 ## ---------------------------------------------------------------
 
 check=$(printf '\342\234\224\n' | iconv -f UTF-8)
-is_restart=false
+#working_mode=false
 
 # define BINDLE, BINDLE_SERVER, BINDLE_URL, RUST_LOG, WASMCLOUD_HOST_HOME
 source $_DIR/env
@@ -110,7 +110,7 @@ host_cmd() {
 
 # stop docker and wipe all data (database, nats cache, host provider/actors, etc.)
 wipe_all() {
-    is_restart=$1
+    working_mode=$1
 
     cat >$SECRETS <<__WIPE
 WASMCLOUD_CLUSTER_SEED=
@@ -133,7 +133,7 @@ __WIPE
     killall --quiet -KILL wasmcloud_httpserver_default || true
     killall --quiet -KILL wasmcloud_mlinference_default || true
 
-    if [ ! "$is_restart" = true ] ; then
+    if [ ! "$working_mode" = "restart" ] ; then
         echo 'going to shutdown .. '
         wash drain all
     else
@@ -264,8 +264,10 @@ start_actors() {
     cd ${_DIR}/../actors
     for i in */; do
         if [ -f $i/Makefile ]; then
-            if [ "$is_restart" = true ] ; then
+            if [ "$working_mode" == "restart" ] ; then
                 make HOST_DEVICE_IP=${HOST_DEVICE_IP} -C $i start
+            elif [ "$working_mode" == "packages" ] ; then
+                # __CB__TODO
             else
                 make HOST_DEVICE_IP=${HOST_DEVICE_IP} -C $i build push start
             fi
@@ -279,7 +281,7 @@ start_actors() {
 start_providers() {
     local _host_id=$(host_id)
 
-    if [ "$is_restart" != true ] ; then
+    if [ "$working_mode" != true ] ; then
         # make sure inference provider is built
         make -C ${_DIR}/../providers/mlinference all
     fi
@@ -349,7 +351,7 @@ wait_for_wasmcloud() {
 run_all() {
     start=$(date +%s)
 
-    if [ "$is_restart" = true ]; then
+    if [ "$working_mode" = true ]; then
         echo "going to restart the application .."
     else
         echo "running a full startup cycle .."
@@ -385,16 +387,16 @@ run_all() {
 
     wait_for_wasmcloud
 
-    if [ "$is_restart" != true ] ; then
+    if [ "$working_mode" != true ] ; then
         # push capability provider to local registry
         push_capability_provider
     fi
 
     # build, push, and start all actors
-    start_actors is_restart
+    start_actors working_mode
 
     # start capability providers: httpserver and sqldb 
-    start_providers is_restart
+    start_providers working_mode
 
     # link providers with actors
     link_providers
@@ -407,20 +409,21 @@ run_all() {
 }
 
 run_restart() {    
-    is_restart=true
+    working_mode=restart
 
-    wipe_all $is_restart
+    wipe_all $working_mode
 
-    run_all $is_restart
+    run_all $working_mode
 
-    is_restart=false
+    unset working_mode
 }
 
 run_packages() {
-    is_restart=false
+    working_mode=packages
 
-    wipe_all $is_restart
+    wipe_all $working_mode
 
+    unset working_mode
 }
 
 case $1 in 

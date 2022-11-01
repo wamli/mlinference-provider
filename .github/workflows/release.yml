@@ -39,7 +39,7 @@ jobs:
       - name: Show built wasmcloud_provider
         working-directory: /home/runner/work/mlinference-provider/mlinference-provider
         run: |
-          var=$(ls *.par.gz)
+          var=$(ls *.*)
           echo "These files are in '/home/runner/work/mlinference-provider/mlinference-provider': $var"
       - name: Upload executable to GH Actions
         uses: actions/upload-artifact@v3
