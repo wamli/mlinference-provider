@@ -280,8 +280,8 @@ start_actors() {
 # idempotent
 start_providers() {
     local _host_id=$(host_id)
-
-    if [ "$working_mode" != true ] ; then
+    
+    if { [ "$working_mode" != "restart" ] && [ "$working_mode" != "packages" ]; }; then
         # make sure inference provider is built
         make -C ${_DIR}/../providers/mlinference all
     fi
@@ -351,8 +351,10 @@ wait_for_wasmcloud() {
 run_all() {
     start=$(date +%s)
 
-    if [ "$working_mode" = true ]; then
+    if [ "$working_mode" = "restart" ]; then
         echo "going to restart the application .."
+    elif [ "$working_mode" = "packages" ]; then
+        echo "going to fetch pre-built packages .."
     else
         echo "running a full startup cycle .."
     fi
@@ -387,7 +389,7 @@ run_all() {
 
     wait_for_wasmcloud
 
-    if [ "$working_mode" != true ] ; then
+    if { [ "$working_mode" != "restart" ] && [ "$working_mode" != "packages" ]; }; then
         # push capability provider to local registry
         push_capability_provider
     fi

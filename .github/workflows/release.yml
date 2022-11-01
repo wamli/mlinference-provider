@@ -37,10 +37,10 @@ jobs:
         run: |
           cross build --release --target ${{ matrix.target }}
       - name: Show built wasmcloud_provider
-        working-directory: /home/runner/work/mlinference-provider/mlinference-provider
+        #working-directory: /home/runner/work/mlinference-provider/mlinference-provider
         run: |
-          var=$(ls *.*)
-          echo "These files are in '/home/runner/work/mlinference-provider/mlinference-provider': $var"
+          var=$(ls target/${{ matrix.target }}/release/*)
+          echo "These files are in 'target/${{ matrix.target }}/release/': $var"
       - name: Upload executable to GH Actions
         uses: actions/upload-artifact@v3
         with:
