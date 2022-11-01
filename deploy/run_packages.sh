@@ -416,6 +416,13 @@ run_restart() {
     is_restart=false
 }
 
+run_packages() {
+    is_restart=false
+
+    wipe_all $is_restart
+
+}
+
 case $1 in 
 
     secrets ) create_secrets ;;
@@ -431,6 +438,7 @@ case $1 in
     host ) shift; host_cmd $@ ;;
     run-all | all ) shift; run_all $@ ;;
     run-restart | restart) shift; run_restart $@ ;;
+    run-packages | packages) shift; run_packages $@ ;;
 
     * ) show_help && exit 1 ;;
 
