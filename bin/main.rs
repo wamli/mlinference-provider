@@ -9,9 +9,9 @@ pub(crate) use wasmcloud_interface_mlinference::{
 };
 
 #[cfg(any(feature = "tflite", feature = "edgetpu"))]
-use wasmcloud_provider_mlinference::TfLiteEngine;
+use mlinference::TfLiteEngine;
 
-use wasmcloud_provider_mlinference::{
+use mlinference::{
     get_default_inference_result, load_settings, BindleLoader, Engine, Graph, GraphEncoding,
     GraphExecutionContext, InferenceFramework, ModelContext, ModelZoo, TractEngine,
 };

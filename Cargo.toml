@@ -44,7 +44,8 @@ wasmcloud-test-util = "0.5"
 image = { version = "0.24", default-features = false, features = ["gif", "jpeg", "ico", "png", "pnm", "tga", "tiff", "webp", "bmp", "hdr", "dxt", "dds", "farbfeld"]  }
 
 [lib]
-name = "wasmcloud_provider_mlinference"
+#name = "wasmcloud_provider_mlinference"
+name = "mlinference"
 path = "src/lib.rs"
 
 [[bin]]

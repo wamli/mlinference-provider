@@ -16,7 +16,7 @@ use wasmcloud_test_util::{
 #[allow(unused_imports)]
 use wasmcloud_test_util::{run_selected, run_selected_spawn};
 
-use wasmcloud_provider_mlinference::inference::{bytes_to_f32_vec, f32_array_to_bytes};
+use mlinference::inference::{bytes_to_f32_vec, f32_array_to_bytes};
 
 pub trait NdArrayTensor<S, T, D> {
     /// https://en.wikipedia.org/wiki/Softmax_function
