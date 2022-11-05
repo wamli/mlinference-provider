@@ -47,7 +47,6 @@ jobs:
           name: ${{ matrix.target }}
           if-no-files-found: error
           path: |
-            target/${{ matrix.target }}/release/mlinference
             target/${{ matrix.target }}/release/${{ env.artifact-name }}
             target/${{ matrix.target }}/release/${{ env.artifact-name }}.exe
 
