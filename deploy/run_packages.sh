@@ -134,10 +134,10 @@ __WIPE
     killall --quiet -KILL wasmcloud_mlinference_default || true
 
     if [ ! "$working_mode" = "restart" ] ; then
-        echo 'going to shutdown .. '
+        echo -n "going to shutdown .. "
         wash drain all
     else
-        echo 'detected a restart .. not draining resources'
+        echo -n "detected a restart .. not draining resources"
     fi
 
     # clear bindle cache
@@ -266,10 +266,10 @@ start_actors() {
         if [ -f $i/Makefile ]; then
             if [ "$working_mode" == "restart" ] ; then
                 make HOST_DEVICE_IP=${HOST_DEVICE_IP} -C $i start
-            elif [ "$working_mode" == "packages" ] ; then
-                # __CB__TODO
-            else
-                make HOST_DEVICE_IP=${HOST_DEVICE_IP} -C $i build push start
+            # elif [ "$working_mode" == "packages" ] ; then
+            #     # __CB__TODO
+            # else
+            #     make HOST_DEVICE_IP=${HOST_DEVICE_IP} -C $i build push start
             fi
         fi
     done
@@ -394,11 +394,19 @@ run_all() {
         push_capability_provider
     fi
 
-    # build, push, and start all actors
-    start_actors working_mode
+    if [ "$working_mode" != "packages" ]; then
+        # build, push, and start all actors
+        start_actors working_mode
+    else
+        wash ctl start actor ghcr.io/wamli/imagenetpostprocessor:0.2.0
+    fi
 
+    if [ "$working_mode" != "packages" ]; then
     # start capability providers: httpserver and sqldb 
     start_providers working_mode
+    else
+        wash ctl start provider ghcr.io/wamli/mlinference-provider:latest
+    fi
 
     # link providers with actors
     link_providers
@@ -421,11 +429,13 @@ run_restart() {
 }
 
 run_packages() {
+    export WASMCLOUD_OCI_ALLOW_LATEST=1
     working_mode=packages
 
-    wipe_all $working_mode
+    run_all $working_mode
 
     unset working_mode
+    unset WASMCLOUD_OCI_ALLOW_LATEST
 }
 
 case $1 in 
