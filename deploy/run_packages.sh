@@ -237,6 +237,7 @@ start_services() {
 
     # start wasmCloud host in background
     export WASMCLOUD_OCI_ALLOWED_INSECURE=${REG_SERVER_FROM_HOST}
+    export WASMCLOUD_OCI_ALLOW_LATEST=true
     #host_cmd start &
     host_cmd daemon
 }

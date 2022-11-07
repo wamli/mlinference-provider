@@ -35,7 +35,7 @@ jobs:
           echo "artifact-name=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].targets[0].name')" >> $GITHUB_ENV
       - name: Build native executable
         run: |
-          cross build --release --target ${{ matrix.target }}
+          cross build --release --target ${{ matrix.target }} --features edgetpu
       - name: Show built wasmcloud_provider
         #working-directory: /home/runner/work/mlinference-provider/mlinference-provider
         run: |
