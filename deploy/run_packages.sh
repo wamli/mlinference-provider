@@ -399,7 +399,7 @@ run_all() {
         # build, push, and start all actors
         start_actors working_mode
     else
-        wash ctl start actor ghcr.io/wamli/imagenetpostprocessor:0.2.0
+        wash ctl start actor ghcr.io/wamli/imagenetpostprocessor:latest
     fi
 
     if [ "$working_mode" != "packages" ]; then

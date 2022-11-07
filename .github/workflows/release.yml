@@ -20,10 +20,10 @@ jobs:
     strategy:
       matrix:
         target:
-          - x86_64-unknown-linux-gnu
+          #- x86_64-unknown-linux-gnu
           #- x86_64-apple-darwin
-          - aarch64-unknown-linux-gnu
-          #- aarch64-apple-darwin
+          #- aarch64-unknown-linux-gnu
+          - aarch64-apple-darwin
           #- armv7-unknown-linux-gnueabihf
           #- x86_64-pc-windows-gnu
     runs-on: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
           echo "artifact-name=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].targets[0].name')" >> $GITHUB_ENV
       - name: Build native executable
         run: |
-          cross build --release --target ${{ matrix.target }} --features edgetpu
+          cross build --release --target ${{ matrix.target }}
       - name: Show built wasmcloud_provider
         #working-directory: /home/runner/work/mlinference-provider/mlinference-provider
         run: |
@@ -68,9 +68,9 @@ jobs:
           make par
       - name: Fill provider archive with binaries
         run: |
-          wash par insert --arch aarch64-linux  --binary aarch64-unknown-linux-gnu/${{ env.artifact-name }} build/${{ env.artifact-name }}.par.gz
+          wash par insert --arch aarch64-macos  --binary aarch64-apple-darwin/${{ env.artifact-name }} build/${{ env.artifact-name }}.par.gz
+      #     wash par insert --arch aarch64-linux  --binary aarch64-unknown-linux-gnu/${{ env.artifact-name }} build/${{ env.artifact-name }}.par.gz
       #     wash par insert --arch x86_64-macos   --binary x86_64-apple-darwin/${{ env.artifact-name }} build/${{ env.artifact-name }}.par.gz
-      #     wash par insert --arch aarch64-macos  --binary aarch64-apple-darwin/${{ env.artifact-name }} build/${{ env.artifact-name }}.par.gz
       #     wash par insert --arch armv7-linux    --binary armv7-unknown-linux-gnueabihf/${{ env.artifact-name }} build/${{ env.artifact-name }}.par.gz
       #     wash par insert --arch x86_64-windows --binary x86_64-pc-windows-gnu/${{ env.artifact-name }}.exe build/${{ env.artifact-name }}.par.gz
       - name: Upload provider archive to GH Actions
