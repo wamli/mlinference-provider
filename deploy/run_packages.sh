@@ -237,7 +237,7 @@ start_services() {
 
     # start wasmCloud host in background
     export WASMCLOUD_OCI_ALLOWED_INSECURE=${REG_SERVER_FROM_HOST}
-    export WASMCLOUD_OCI_ALLOW_LATEST=true
+    #export WASMCLOUD_OCI_ALLOW_LATEST=true
     #host_cmd start &
     host_cmd daemon
 }
@@ -399,14 +399,27 @@ run_all() {
         # build, push, and start all actors
         start_actors working_mode
     else
-        wash ctl start actor ghcr.io/wamli/imagenetpostprocessor:latest
+        wash ctl start actor ghcr.io/wamli/mnistpostprocessor:latest --timeout-ms 10000
+        wash ctl start actor ghcr.io/wamli/inferenceapi:latest
+        wash ctl start actor ghcr.io/wamli/imagenetpostprocessor:latest --timeout-ms 10000
+        wash ctl start actor ghcr.io/wamli/imagenetpreprocessor:latest --timeout-ms 10000
+        wash ctl start actor ghcr.io/wamli/mnistpreprocessor:latest --timeout-ms 10000
+        wash ctl start actor ghcr.io/wamli/imagenetpreprocrgb:latest --timeout-ms 10000
+        
+        # wash ctl start actor ghcr.io/wamli/mnistpostprocessor:0.1.0 --timeout-ms 10000
+        # wash ctl start actor ghcr.io/wamli/inferenceapi:0.2.1
+        # wash ctl start actor ghcr.io/wamli/imagenetpostprocessor:0.2.0 --timeout-ms 10000
+        # wash ctl start actor ghcr.io/wamli/imagenetpreprocessor:0.1.0 --timeout-ms 10000
+        # wash ctl start actor ghcr.io/wamli/mnistpreprocessor:0.1.0 --timeout-ms 10000
+        # wash ctl start actor ghcr.io/wamli/imagenetpreprocrgb:0.1.0 --timeout-ms 10000
+
     fi
 
     if [ "$working_mode" != "packages" ]; then
     # start capability providers: httpserver and sqldb 
     start_providers working_mode
     else
-        wash ctl start provider ghcr.io/wamli/mlinference-provider:latest
+        wash ctl start provider ghcr.io/wamli/mlinference-provider:latest --timeout-ms 10000
     fi
 
     # link providers with actors
@@ -430,7 +443,7 @@ run_restart() {
 }
 
 run_packages() {
-    export WASMCLOUD_OCI_ALLOW_LATEST=1
+    export WASMCLOUD_OCI_ALLOW_LATEST=true
     working_mode=packages
 
     run_all $working_mode
