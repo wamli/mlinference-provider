@@ -80,7 +80,8 @@ jobs:
           path: build/${{ env.artifact-name }}.par.gz
 
   github_release:
-    if: startswith(github.ref, 'refs/tags/') # Only run on tag push
+    # Only run on tag push
+    if: startswith(github.ref, 'refs/tags/') 
     needs: [assemble_provider_archive]
     runs-on: ubuntu-latest
     steps:

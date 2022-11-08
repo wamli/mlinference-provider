@@ -262,19 +262,34 @@ prepare_remote_device() {
 start_actors() {
     echo "starting actors .."
     _here=$PWD
-    cd ${_DIR}/../actors
-    for i in */; do
-        if [ -f $i/Makefile ]; then
-            if [ "$working_mode" == "restart" ] ; then
-                make HOST_DEVICE_IP=${HOST_DEVICE_IP} -C $i start
-            # elif [ "$working_mode" == "packages" ] ; then
-            #     # __CB__TODO
-            # else
-            #     make HOST_DEVICE_IP=${HOST_DEVICE_IP} -C $i build push start
+
+    if [ "$working_mode" == "packages" ] ; then
+        # wash ctl start actor ghcr.io/wamli/mnistpostprocessor:latest --timeout-ms 10000
+        # wash ctl start actor ghcr.io/wamli/inferenceapi:latest
+        # wash ctl start actor ghcr.io/wamli/imagenetpostprocessor:latest --timeout-ms 10000
+        # wash ctl start actor ghcr.io/wamli/imagenetpreprocessor:latest --timeout-ms 10000
+        # wash ctl start actor ghcr.io/wamli/mnistpreprocessor:latest --timeout-ms 10000
+        # wash ctl start actor ghcr.io/wamli/imagenetpreprocrgb:latest --timeout-ms 10000
+        
+        wash ctl start actor ghcr.io/wamli/mnistpostprocessor:0.1.0 --timeout-ms 10000
+        wash ctl start actor ghcr.io/wamli/inferenceapi:0.2.1
+        wash ctl start actor ghcr.io/wamli/imagenetpostprocessor:0.2.0 --timeout-ms 10000
+        wash ctl start actor ghcr.io/wamli/imagenetpreprocessor:0.1.0 --timeout-ms 10000
+        wash ctl start actor ghcr.io/wamli/mnistpreprocessor:0.1.0 --timeout-ms 10000
+        wash ctl start actor ghcr.io/wamli/imagenetpreprocrgb:0.1.0 --timeout-ms 10000
+    else
+        cd ${_DIR}/../actors
+        for i in */; do
+            if [ -f $i/Makefile ]; then
+                if [ "$working_mode" == "restart" ] ; then
+                    make HOST_DEVICE_IP=${HOST_DEVICE_IP} -C $i start
+                else
+                    make HOST_DEVICE_IP=${HOST_DEVICE_IP} -C $i build push start
+                fi
             fi
-        fi
-    done
-    cd $_here
+        done
+        cd $_here
+    fi
 }
 
 # start wasmcloud capability providers
@@ -287,13 +302,23 @@ start_providers() {
         make -C ${_DIR}/../providers/mlinference all
     fi
 
-    echo -e "\nstarting capability provider '${MLINFERENCE_REF}' from registry .."
-	wash ctl start provider $MLINFERENCE_REF --link-name default --host-id $_host_id --timeout-ms 32000
+    if [ "$working_mode" == "packages" ]; then
+        echo -e "\nstarting capability provider '${MLINFERENCE_REF}' as a package .."
+        wash ctl start provider ghcr.io/wamli/mlinference-provider:latest --timeout-ms 10000
+        
+        HTTPSERVER_REF=wasmcloud.azurecr.io/httpserver:0.16.0
+        HTTPSERVER_ID=VAG3QITQQ2ODAOWB5TTQSDJ53XK3SHBEIFNK4AYJ5RKAX2UNSCAPHA5M
+        echo -e "\nstarting capability provider '${HTTPSERVER_REF}' from registry .."
+        wash ctl start provider $HTTPSERVER_REF --link-name default --host-id $_host_id --timeout-ms 50000
+    else
+        echo -e "\nstarting capability provider '${MLINFERENCE_REF}' from registry .."
+        wash ctl start provider $MLINFERENCE_REF --link-name default --host-id $_host_id --timeout-ms 32000
 
-    echo -e "\nstarting capability provider '${HTTPSERVER_REF}' from registry .."
-    #wash ctl start provider $HTTPSERVER_REF --link-name default --host-id $_host_id --timeout-ms 15000
-    #cd ../../../capability-providers/httpserver-rs && make push && make start
-    wash ctl start provider $HTTPSERVER_REF --link-name default --host-id $_host_id --timeout-ms 50000
+        echo -e "\nstarting capability provider '${HTTPSERVER_REF}' from registry .."
+        #wash ctl start provider $HTTPSERVER_REF --link-name default --host-id $_host_id --timeout-ms 15000
+        #cd ../../../capability-providers/httpserver-rs && make push && make start
+        wash ctl start provider $HTTPSERVER_REF --link-name default --host-id $_host_id --timeout-ms 50000
+    fi
 }
 
 # base-64 encode file into a string
@@ -395,32 +420,11 @@ run_all() {
         push_capability_provider
     fi
 
-    if [ "$working_mode" != "packages" ]; then
-        # build, push, and start all actors
-        start_actors working_mode
-    else
-        wash ctl start actor ghcr.io/wamli/mnistpostprocessor:latest --timeout-ms 10000
-        wash ctl start actor ghcr.io/wamli/inferenceapi:latest
-        wash ctl start actor ghcr.io/wamli/imagenetpostprocessor:latest --timeout-ms 10000
-        wash ctl start actor ghcr.io/wamli/imagenetpreprocessor:latest --timeout-ms 10000
-        wash ctl start actor ghcr.io/wamli/mnistpreprocessor:latest --timeout-ms 10000
-        wash ctl start actor ghcr.io/wamli/imagenetpreprocrgb:latest --timeout-ms 10000
-        
-        # wash ctl start actor ghcr.io/wamli/mnistpostprocessor:0.1.0 --timeout-ms 10000
-        # wash ctl start actor ghcr.io/wamli/inferenceapi:0.2.1
-        # wash ctl start actor ghcr.io/wamli/imagenetpostprocessor:0.2.0 --timeout-ms 10000
-        # wash ctl start actor ghcr.io/wamli/imagenetpreprocessor:0.1.0 --timeout-ms 10000
-        # wash ctl start actor ghcr.io/wamli/mnistpreprocessor:0.1.0 --timeout-ms 10000
-        # wash ctl start actor ghcr.io/wamli/imagenetpreprocrgb:0.1.0 --timeout-ms 10000
+    # build, push, and start all actors
+    start_actors working_mode
 
-    fi
-
-    if [ "$working_mode" != "packages" ]; then
     # start capability providers: httpserver and sqldb 
     start_providers working_mode
-    else
-        wash ctl start provider ghcr.io/wamli/mlinference-provider:latest --timeout-ms 10000
-    fi
 
     # link providers with actors
     link_providers
