@@ -115,7 +115,7 @@ ifeq ($(wildcard ./Cargo.toml),./Cargo.toml)
 RUST_DEPS += $(wildcard src/*.rs) $(wildcard target/*/deps/*) Cargo.toml Makefile
 
 target/release/$(bin_name): $(RUST_DEPS)
-	cargo build --release
+	cargo build --release --features edgetpu
 
 target/debug/$(bin_name): $(RUST_DEPS)
 	cargo build
@@ -124,7 +124,7 @@ target/debug/$(bin_name): $(RUST_DEPS)
 target/%/release/$(bin_name): $(RUST_DEPS)
 	tname=`printf $@ | sed -E 's_target/([^/]+)/release.*$$_\1_'` &&\
 	rm -rf target/release/build &&\
-	cross build --release --target $$tname
+	cross build --release --target $$tname --features edgetpu
 
 endif
 
