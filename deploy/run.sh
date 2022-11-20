@@ -262,7 +262,7 @@ start_services() {
 prepare_remote_device() {
 
     printf "\nTARGET_DEVICE_IP is detected to be remote --> you try to deploy the runtime on a remote node\n\n"
-    printf "In order to prepare well you certainly\n"
+    printf "In order to be well prepared you certainly\n"
     printf "$check loaded ${_DIR}/../iot/configure_edge.sh to the remote node\n"
     printf "$check loaded ${_DIR}/../iot/restart_edge.sh to the remote node\n"
     printf "$check 'source ./configure_edge.sh' on the remote node\n"
@@ -319,14 +319,15 @@ start_providers() {
 
     if [ "$working_mode" == "packages" ]; then
         echo -e "\nstarting capability provider '${MLINFERENCE_REF}' as a package .."
-        wash ctl start provider ghcr.io/wamli/mlinference-provider:latest --link-name default --host-id $_host_id --timeout-ms 32000
+        #wash ctl start provider ghcr.io/wamli/mlinference-provider:latest --link-name default --host-id $_host_id --timeout-ms 32000
+        wash ctl start provider ghcr.io/wamli/mlinference-provider-edgetpu:0.3.1 --link-name default --host-id $_host_id --timeout-ms 32000
     else 
         echo -e "\nstarting capability provider '${MLINFERENCE_REF}' from registry .."
-        wash ctl start provider $MLINFERENCE_REF --link-name default --host-id $_host_id --timeout-ms 8000
+        wash ctl start provider $MLINFERENCE_REF --link-name default --host-id $_host_id --timeout-ms 32000
     fi
        
     echo -e "\nstarting capability provider '${HTTPSERVER_REF}' from registry .."
-    wash ctl start provider $HTTPSERVER_REF --link-name default --host-id $_host_id --timeout-ms 8000 
+    wash ctl start provider $HTTPSERVER_REF --link-name default --host-id $_host_id --timeout-ms 32000 
 }
 
 # base-64 encode file into a string
@@ -421,7 +422,9 @@ run_all() {
         $TERMINAL -e ./run.sh host attach &
     fi
 
-    wait_for_wasmcloud
+    if [ "$TARGET_DEVICE_IP" == "127.0.0.1" ]; then
+        wait_for_wasmcloud
+    fi
 
     if [ "$working_mode" != "restart" ]; then
         # push capability provider to local registry
