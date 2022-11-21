@@ -21,7 +21,7 @@ else
 fi
 
 # define the IP address of the (remote) target device 
-#export TARGET_DEVICE_IP=192.168.178.148
+#export TARGET_DEVICE_IP=192.168.178.97
 
 if [ -z ${TARGET_DEVICE_IP+x} ] 
 then 
