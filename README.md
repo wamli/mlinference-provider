@@ -1,7 +1,7 @@
 # wamli - wasmCloud machine learning inference
 
 ~~~
-wamli is an inference server supporting multiple engines and targets written in Rust
+wamli is an inference server supporting multiple engines and targets. It is written in Rust.
 ~~~
 
 ## Supported engines and targets
@@ -9,7 +9,7 @@ wamli is an inference server supporting multiple engines and targets written in 
    Hardware         |    ONNX           |  Tensorflow       |  Tensorflow Lite        |
   :---------------  | :---------------: | :---------------: | :---------------        |
   CPU (x86, ARM)    | ✅                | ✅                |  ✅ (feature *tflite*)  |
-  TPU (edge TPU)    |                   |                   |  ✅ (feature *edgetpu*) |
+  TPU ([edge TPU](https://coral.ai/docs/edgetpu/faq/))    |                   |                   |  ✅ (feature *edgetpu*) |
   GPU               |                   |                   |                         |
   
 GPU support is on the roadmap.
