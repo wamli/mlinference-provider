@@ -7,7 +7,7 @@ wamli is an inference server supporting multiple engines and targets written in 
 ## Supported engines and targets
 
    Hardware         |    ONNX           |  Tensorflow       |  Tensorflow Lite        |
-  :---------------  | :---------------: | :---------------: | :---------------:       |
+  :---------------  | :---------------: | :---------------: | :---------------        |
   CPU (x86, ARM)    | ✅                | ✅                |  ✅ (feature *tflite*)  |
   TPU (edge TPU)    |                   |                   |  ✅ (feature *edgetpu*) |
   GPU               |                   |                   |                         |
