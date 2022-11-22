@@ -1,20 +1,43 @@
 # wamli - wasmCloud machine learning inference
 
 ~~~
-wamli is an inference server supporting multiple engines and targets. It is written in Rust.
+wamli is a framework for machine learning inference, written in Rust.
 ~~~
+
+## Features
+
+wamli comprises
+* an inference server 
+* support for multiple engines and targets. 
+* means for pre- and postprocessing as well as multiple examples
+* means to communicate with a model store
+* multiple example models ready to be uploaded to the model store
+
+It is written in Rust.
 
 ## Supported engines and targets
 
-   Hardware         |    ONNX           |  Tensorflow       |  Tensorflow Lite        |
-  :---------------  | :---------------: | :---------------: | :---------------        |
-  CPU (x86, ARM)    | ✅                | ✅                |  ✅ (feature *tflite*)  |
-  TPU ([edge TPU](https://coral.ai/docs/edgetpu/faq/))    |                   |                   |  ✅ (feature *edgetpu*) |
-  GPU               |                   |                   |                         |
+   Hardware                                            |    ONNX           |  Tensorflow       |  Tensorflow Lite        |
+  :---------------                                     | :---------------: | :---------------: | :---------------        |
+  CPU (x86, ARM)                                       | ✅                | ✅                |  ✅ (feature *tflite*)  |
+  TPU ([edge TPU](https://coral.ai/docs/edgetpu/faq/)) |                   |                   |  ✅ (feature *edgetpu*) |
+  GPU                                                  |                   |                   |                         |
   
 GPU support is on the roadmap.
 
 > **_NOTE:_**  Even though there are binaries for Windows as well, **Linux** is assumed as an OS.
+
+## Devices test matrix
+
+So far, wamli has been deployed and used on the following devices/environments:
+
+   Device/Env                                                    |    OS                                                                            | CPU               |  edge TPU                                                            |
+  :---------------                                               | :---------------:                                                                | :---------------: | :---------------:                                                    |
+  x86_64 notebook                                                | Ubuntu 20.04                                                                     | ✅                |  ✅ [USB-Accelerator](https://coral.ai/docs/accelerator/get-started) |
+  ARM notebook                                                   | macOS                                                                            | ✅                |                                                                      |
+  Raspberry Pi 4 B                                               | Ubuntu 22.04                                                                     | ✅                |  ✅ [USB-Accelerator](https://coral.ai/docs/accelerator/get-started) |
+  [Coral Dev Board](https://coral.ai/docs/dev-board/get-started/)| [Mendel Linux](https://coral.googlesource.com/docs/+/refs/heads/master/ReadMe.md)| ✅                |  :x:                                                                 |
+  [Cosmonic Cloud](https://cosmonic.com/)                        |                                                                                  | ✅                |                                                                      |
 
 ## Getting started
 
@@ -32,7 +55,7 @@ An example application including multiple different models is pre-compiled and p
 
 ### Configuration
 
-Open __*deploy/env*__ and modify according to your needs:
+Open __*deploy/env*__ and modify it according to your needs:
 * set `BINDLE_HOME`, e.g. `export BINDLE_HOME=$HOME/dev/rust/bindle`
 * set `WASMCLOUD_HOST_HOME`, e.g. `export WASMCLOUD_HOST_HOME=$HOME/dev/wasmcloud/wasmCloudHost_57-4`
 
