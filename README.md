@@ -12,8 +12,7 @@ wamli comprises
 * means for pre- and postprocessing as well as multiple examples
 * means to communicate with a model store
 * multiple example models ready to be uploaded to the model store
-
-It is written in Rust.
+* an http(s) endpoint for inference requests
 
 ## Supported engines and targets
 
