@@ -10,6 +10,7 @@ tflite = [ "dep:tflite"]
 edgetpu = ["tflite", "dep:edgetpu"]
 
 [dependencies]
+anyhow = "1.0"
 async-trait = "0.1"
 base64 = "0.13"
 bindle = "0.8.1"
@@ -23,10 +24,10 @@ thiserror  = "1.0"
 tokio = { version = "1", features = ["full"] }
 toml = "0.5"
 tracing-log = "0.1"
-tract-data = "0.18"
-tract-linalg = "0.18"
-tract-onnx = { version = "0.18" }
-tract-tensorflow = "0.18"
+tract-data = "0.21"
+tract-linalg = "0.21"
+tract-onnx = "0.21"
+tract-tensorflow = "0.21"
 wasmbus-rpc = "0.10"
 wasmcloud_interface_mlinference = "0.3"
 #edgetpu = { git = "https://github.com/Finfalter/edgetpu-rs", rev = "d86f59c" }

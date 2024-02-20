@@ -2,9 +2,12 @@ use crate::inference::{
     ExecutionTarget, Graph, GraphEncoding, GraphExecutionContext, InferenceEngine, InferenceError,
     InferenceResult,
 };
+use anyhow::Context;
 use async_trait::async_trait;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use ndarray::Array;
+use tract_data::internal::tract_smallvec::SmallVec;
+use tract_onnx::prelude::TValue; //__CB__NEW
 use std::{
     collections::{btree_map::Keys, BTreeMap},
     io::Cursor,
@@ -19,11 +22,16 @@ use wasmcloud_interface_mlinference::{
     InferenceOutput, Status, Tensor, ValueType, TENSOR_FLAG_ROW_MAJOR,
 };
 
+use tract_onnx::prelude::tract_data::internal::tract_smallvec::alloc::rc::Rc;
+use tract_onnx::prelude::tract_data::internal::tract_smallvec::alloc::sync::Arc;
+
 #[derive(Debug)]
 pub struct TractSession {
     pub graph: TractGraph<InferenceFact, Box<dyn InferenceOp>>,
     pub encoding: GraphEncoding,
-    pub input_tensors: Option<Vec<TractTensor>>,
+    pub input_tensors: Option<Vec<Arc<TractTensor>>>,
+    // pub input_tensors: Option<TVec<TValue>>,
+    // pub output_tensors: Option<SmallVec<[TValue;4]>>,
     pub output_tensors: Option<Vec<Arc<TractTensor>>>,
 }
 
@@ -129,11 +137,13 @@ impl InferenceEngine for TractEngine {
         };
 
         let model = match encoding {
-            GraphEncoding::Onnx => tract_onnx::onnx().model_for_read(&mut model_bytes).unwrap(),
+            GraphEncoding::Onnx => tract_onnx::onnx()
+                .model_for_read(&mut model_bytes)
+                .context("failed to get model for read")?,
 
             GraphEncoding::Tensorflow => tract_tensorflow::tensorflow()
                 .model_for_read(&mut model_bytes)
-                .unwrap(),
+                .context("failed to get model for read")?,
 
             _ => {
                 log::error!(
@@ -197,7 +207,7 @@ impl InferenceEngine for TractEngine {
             Some(ref mut input_arrays) => {
                 // __CB__2022-03-10 re-evaluate next line
                 input_arrays.clear();
-                input_arrays.push(input);
+                input_arrays.push(input.into());
 
                 log::debug!(
                     "set_input() - input arrays now contains {} items",
@@ -205,7 +215,7 @@ impl InferenceEngine for TractEngine {
                 );
             }
             None => {
-                execution.input_tensors = Some(vec![input]);
+                execution.input_tensors = Some(vec![input.into()]);
             }
         };
         Ok(())
@@ -231,13 +241,22 @@ impl InferenceEngine for TractEngine {
         // There are two `.clone()` calls here that could prove
         // to be *very* ineficient, one in getting the input tensors,
         // the other in making the model runnable.
-        let input_tensors: Vec<TractTensor> = execution
+        // let input_tensors: Vec<Arc<TractTensor>> = execution
+        // // let input_tensors = execution
+        //     .input_tensors
+        //     .as_ref()
+        //     .unwrap_or(&vec![])
+        //     .clone()
+        //     .into_iter()
+        //     .collect();
+
+        let input_tensors: SmallVec<[TValue; 4]> = execution
             .input_tensors
             .as_ref()
             .unwrap_or(&vec![])
-            .clone()
-            .into_iter()
-            .collect();
+            .iter() // Use `iter` instead of `into_iter` to avoid consuming the vector
+            .map(|arc_tensor| TValue::Const(arc_tensor.clone())) // Wrap each `Arc<Tensor>` in `TValue::Const`
+            .collect(); // Collect into `SmallVec<[TValue; 4]>`
 
         log::debug!(
             "compute() - input tensors contains {} elements",
@@ -252,7 +271,7 @@ impl InferenceEngine for TractEngine {
             .clone()
             .into_optimized()?
             .into_runnable()?
-            .run(input_tensors.into())?;
+            .run(input_tensors)?;
 
         log::debug!(
             "compute() - output tensors contains {} elements",
@@ -260,19 +279,26 @@ impl InferenceEngine for TractEngine {
         );
 
         // __CB__2022-03-10 re-evaluate next line
-        execution
-            .output_tensors
-            .replace(output_tensors.into_iter().collect());
+        // execution
+        //     .output_tensors
+        //     .replace(output_tensors.into_iter().collect());
 
-        // match execution.output_tensors {
-        //     Some(_) => {
-        //         log::error!("compute() - existing data in output_tensors, aborting");
-        //         return Err(InferenceError::RuntimeError);
-        //     }
-        //     None => {
-        //         execution.output_tensors = Some(output_tensors.into_iter().collect());
-        //     }
-        // };
+        // Assuming `output_tensors` is a `SmallVec<[TValue; 4]>`
+        let output_tensors_vec: Vec<Arc<TractTensor>> = output_tensors
+        .into_iter()
+        .map(|tvalue| {
+            match tvalue {
+                TValue::Const(arc_tensor) => arc_tensor,
+                TValue::Var(rc_tensor) => {
+                    // Convert Rc<Tensor> to Arc<Tensor>. This is safe because you own the TValue
+                    // and you're not going to use it anymore.
+                    Arc::new(Rc::try_unwrap(rc_tensor).expect("Failed to unwrap Rc<Tensor>"))
+                },
+            }
+        })
+        .collect();
+
+        execution.output_tensors.replace(output_tensors_vec);
 
         Ok(())
     }
@@ -351,7 +377,6 @@ pub type Result<T> = std::io::Result<T>;
 
 pub async fn bytes_to_f32_vec(data: Vec<u8>) -> Result<Vec<f32>> {
     data.chunks(4)
-        .into_iter()
         .map(|c| {
             let mut rdr = Cursor::new(c);
             rdr.read_f32::<LittleEndian>()

@@ -27,16 +27,11 @@ pub type ModelName = String;
 pub type ModelZoo = HashMap<ModelName, ModelContext>;
 pub type Engine = Arc<Box<dyn InferenceEngine + Send + Sync>>;
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Hash)]
 pub enum InferenceFramework {
+    #[default]
     Tract,
     TfLite,
-}
-
-impl Default for InferenceFramework {
-    fn default() -> Self {
-        InferenceFramework::Tract
-    }
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize)]

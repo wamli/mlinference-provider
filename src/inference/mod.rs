@@ -13,36 +13,27 @@ use wasmcloud_interface_mlinference::{InferenceOutput, Tensor};
 pub type Graph = u32;
 
 /// GraphEncoding
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum GraphEncoding {
+    #[default]
     Onnx,
     TfLite,
     OpenVino,
     Tensorflow,
 }
 
-impl Default for GraphEncoding {
-    fn default() -> GraphEncoding {
-        GraphEncoding::Onnx
-    }
-}
-
 /// GraphExecutionContext
 pub type GraphExecutionContext = u32;
 
 /// ExecutionTarget
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ExecutionTarget {
+    #[default]
     Cpu,
     Gpu,
     Tpu,
-}
-impl Default for ExecutionTarget {
-    fn default() -> Self {
-        ExecutionTarget::Cpu
-    }
 }
 
 impl Default for Box<dyn InferenceEngine + Send + Sync> {
